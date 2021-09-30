@@ -7,5 +7,5 @@ benchmarks/data_dirs/pannotia
 benchmarks/data_dirs/proxy-apps-doe
 benchmarks/src/cuda/dragon_li/cdp_bin/
 *.DS_Store
-benchmarks/bin
-uvm_benchmarks/bin
+benchmarks/bin/*
+uvm_benchmarks/bin/*
