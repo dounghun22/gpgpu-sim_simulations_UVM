@@ -1,1 +1,1 @@
-./CUDA/leukocyte  ../../data/leukocyte/testfile.avi 5 
+./leukocyte  ../DATA/leukocyte-rodinia-3.1/data/testfile.avi 5 

@@ -1,2 +1,2 @@
-./gaussian -f ../../data/gaussian/matrix4.txt
+./gaussian -f ../DATA/gaussian-rodinia-3.1/data/matrix4.txt
 ./gaussian -s 16
