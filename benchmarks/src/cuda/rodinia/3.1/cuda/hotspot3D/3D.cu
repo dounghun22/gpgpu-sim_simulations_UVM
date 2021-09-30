@@ -180,14 +180,10 @@ int main(int argc, char** argv)
     float *powerIn, *tempOut, *tempIn, *tempCopy;
     int size = numCols * numRows * layers;
 
-
+    powerIn = (float*)calloc(size, sizeof(float));
     tempCopy = (float*)malloc(size * sizeof(float));
-    // powerIn = (float*)calloc(size, sizeof(float));
-    // tempIn = (float*)calloc(size,sizeof(float));
-    // tempOut = (float*)calloc(size, sizeof(float));
-    cudaMallocManaged(&powerIn, size * sizeof(float));
-    cudaMallocManaged(&tempIn, size * sizeof(float));
-    cudaMallocManaged(&tempOut, size * sizeof(float));
+    tempIn = (float*)calloc(size,sizeof(float));
+    tempOut = (float*)calloc(size, sizeof(float));
     float* answer = (float*)calloc(size, sizeof(float));
 
     readinput(powerIn,numRows, numCols, layers,pfile);
@@ -202,10 +198,8 @@ int main(int argc, char** argv)
     float acc = accuracy(tempOut,answer,numRows*numCols*layers);
     printf("Accuracy: %e\n",acc);
     writeoutput(tempOut,numRows, numCols, layers, ofile);
-    cudaFree(tempIn);
-    cudaFree(tempOut); cudaFree(powerIn);
-    free(tempCopy);
-    free(answer);
+    free(tempIn);
+    free(tempOut); free(powerIn);
     return 0;
 }	
 

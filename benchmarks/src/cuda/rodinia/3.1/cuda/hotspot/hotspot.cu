@@ -304,41 +304,36 @@ void run(int argc, char** argv)
     int blockCols = grid_cols/smallBlockCol+((grid_cols%smallBlockCol==0)?0:1);
     int blockRows = grid_rows/smallBlockRow+((grid_rows%smallBlockRow==0)?0:1);
 
-   // FilesavingTemp = (float *) malloc(size*sizeof(float));
-   // FilesavingPower = (float *) malloc(size*sizeof(float));
+    FilesavingTemp = (float *) malloc(size*sizeof(float));
+    FilesavingPower = (float *) malloc(size*sizeof(float));
+    MatrixOut = (float *) calloc (size, sizeof(float));
 
-    float *MatrixTemp[2], *MatrixPower;
-    cudaMallocManaged((void**)&MatrixTemp[0],sizeof(float)*size);
-    cudaMallocManaged((void**)&MatrixTemp[1],sizeof(float)*size);
-    cudaMallocManaged((void**)&MatrixPower,sizeof(float)*size);
-
-    if( !MatrixPower || !MatrixTemp[0] || !MatrixTemp[1])
+    if( !FilesavingPower || !FilesavingTemp || !MatrixOut)
         fatal("unable to allocate memory");
 
     printf("pyramidHeight: %d\ngridSize: [%d, %d]\nborder:[%d, %d]\nblockGrid:[%d, %d]\ntargetBlock:[%d, %d]\n",\
 	pyramid_height, grid_cols, grid_rows, borderCols, borderRows, blockCols, blockRows, smallBlockCol, smallBlockRow);
 	
-   // readinput(FilesavingTemp, grid_rows, grid_cols, tfile);
-   // readinput(FilesavingPower, grid_rows, grid_cols, pfile);
+    readinput(FilesavingTemp, grid_rows, grid_cols, tfile);
+    readinput(FilesavingPower, grid_rows, grid_cols, pfile);
 
-   // cudaMalloc((void**)&MatrixTemp[0], sizeof(float)*size);
-   // cudaMalloc((void**)&MatrixTemp[1], sizeof(float)*size);
+    float *MatrixTemp[2], *MatrixPower;
+    cudaMalloc((void**)&MatrixTemp[0], sizeof(float)*size);
+    cudaMalloc((void**)&MatrixTemp[1], sizeof(float)*size);
+    cudaMemcpy(MatrixTemp[0], FilesavingTemp, sizeof(float)*size, cudaMemcpyHostToDevice);
 
-    readinput(MatrixTemp[0],grid_rows,grid_cols,tfile);
-    readinput(MatrixPower, grid_rows,grid_cols,pfile);
-    //cudaMemcpy(MatrixTemp[0], FilesavingTemp, sizeof(float)*size, cudaMemcpyHostToDevice);
-
-   // cudaMalloc((void**)&MatrixPower, sizeof(float)*size);
-   // cudaMemcpy(MatrixPower, FilesavingPower, sizeof(float)*size, cudaMemcpyHostToDevice);
+    cudaMalloc((void**)&MatrixPower, sizeof(float)*size);
+    cudaMemcpy(MatrixPower, FilesavingPower, sizeof(float)*size, cudaMemcpyHostToDevice);
     printf("Start computing the transient temperature\n");
     int ret = compute_tran_temp(MatrixPower,MatrixTemp,grid_cols,grid_rows, \
 	 total_iterations,pyramid_height, blockCols, blockRows, borderCols, borderRows);
 	printf("Ending simulation\n");
-   // cudaMemcpy(MatrixOut, MatrixTemp[ret], sizeof(float)*size, cudaMemcpyDeviceToHost);
-   cudaDeviceSynchronize();
-    writeoutput(MatrixTemp[ret],grid_rows, grid_cols, ofile);
+    cudaMemcpy(MatrixOut, MatrixTemp[ret], sizeof(float)*size, cudaMemcpyDeviceToHost);
+
+    writeoutput(MatrixOut,grid_rows, grid_cols, ofile);
 
     cudaFree(MatrixPower);
     cudaFree(MatrixTemp[0]);
     cudaFree(MatrixTemp[1]);
+    free(MatrixOut);
 }

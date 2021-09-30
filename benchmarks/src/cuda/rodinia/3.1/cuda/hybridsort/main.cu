@@ -83,16 +83,11 @@ main( int argc, char** argv)
 	// Memory space the list of random floats will take up
 	int mem_size = numElements * sizeof(float); 
 	// Allocate enough for the input list
-	float *cpu_idata;
-	//float *cpu_idata = (float *)malloc(mem_size);
-	cudaMallocManaged(&cpu_idata, mem_size);
+	float *cpu_idata = (float *)malloc(mem_size);
 	// Allocate enough for the output list on the cpu side
 	float *cpu_odata = (float *)malloc(mem_size);
 	// Allocate enough memory for the output list on the gpu side
-	float *gpu_odata;
-	//float *gpu_odata = (float *)malloc(mem_size);
-	cudaMallocManaged(&gpu_odata, mem_size);
-
+	float *gpu_odata = (float *)malloc(mem_size);
 
 	float datamin = FLT_MAX; 
 	float datamax = -FLT_MAX; 
@@ -174,7 +169,7 @@ main( int argc, char** argv)
     sdkDeleteTimer(&mergeTimer);
     sdkDeleteTimer(&totalTimer);
     sdkDeleteTimer(&cpuTimer);
-	cudaFree(cpu_idata); free(cpu_odata); cudaFree(gpu_odata); 
+	free(cpu_idata); free(cpu_odata); free(gpu_odata); 
 }
 
 
@@ -186,32 +181,23 @@ void cudaSort(float *origList, float minimum, float maximum,
 	float *d_output = NULL; 
 	int mem_size = (numElements + DIVISIONS * 4) * sizeof(float); 
 	sdkStartTimer(&uploadTimer);
-	/*{
+	{
 		cudaMalloc((void**) &d_input, mem_size);
 		cudaMalloc((void**) &d_output, mem_size);
 		cudaMemcpy((void *) d_input, (void *)origList, numElements * sizeof(float),
 				   cudaMemcpyHostToDevice);
 		init_bucketsort(numElements); 
-	}*/
+	}
 	sdkStopTimer(&uploadTimer); 
 
 	sdkStartTimer(&totalTimer); 
 
 	// Bucketsort the list
 	sdkStartTimer(&bucketTimer); 
-		//int *sizes = (int*) malloc(DIVISIONS * sizeof(int)); 
-		int *sizes;
-		cudaMallocManaged(&sizes, DIVISIONS * sizeof(int));
-
-		//int *nullElements = (int*) malloc(DIVISIONS * sizeof(int));  
-		int *nullElements;
-		cudaMallocManaged(&nullElements, DIVISIONS * sizeof(int));
-
-		//unsigned int *origOffsets = (unsigned int *) malloc((DIVISIONS + 1) * sizeof(int)); 
-		int *origOffsets;
-		cudaMallocManaged(&origOffsets, (DIVISIONS + 1) * sizeof(int));
-
-		bucketSort(origList, resultList, numElements, sizes, nullElements, 
+		int *sizes = (int*) malloc(DIVISIONS * sizeof(int)); 
+		int *nullElements = (int*) malloc(DIVISIONS * sizeof(int));  
+		unsigned int *origOffsets = (unsigned int *) malloc((DIVISIONS + 1) * sizeof(int)); 
+		bucketSort(d_input, d_output, numElements, sizes, nullElements, 
 				   minimum, maximum, origOffsets); 
 	sdkStopTimer(&bucketTimer); 
 
@@ -238,6 +224,6 @@ void cudaSort(float *origList, float minimum, float maximum,
 
 	// Clean up
 	finish_bucketsort(); 
-	//cudaFree(d_input); //cudaFree(d_output); 
-	cudaFree(nullElements); cudafree(sizes); 
+	cudaFree(d_input); cudaFree(d_output); 
+	free(nullElements); free(sizes); 
 }

@@ -14,59 +14,49 @@ void run(int argc, char** argv);
 
 int rows, cols;
 int* data;
-int* gpuWall;
-int* gpuResult[2];
+int** wall;
+int* result;
 #define M_SEED 9
 int pyramid_height;
 
-//#define BENCH_PRINT
+//#define BENCH_PRINT
 
 void
 init(int argc, char** argv)
 {
-	if(argc==4){
-		cols = atoi(argv[1]);
-		rows = atoi(argv[2]);
+	if(argc==4){
+		cols = atoi(argv[1]);
+		rows = atoi(argv[2]);
                 pyramid_height=atoi(argv[3]);
 	}else{
                 printf("Usage: dynproc row_len col_len pyramid_height\n");
                 exit(0);
         }
-	data = new int[rows*cols];
-
-        cudaMallocManaged((void**)&gpuResult[0], sizeof(int)*cols);
-        cudaMallocManaged((void**)&gpuResult[1], sizeof(int)*cols);
-        cudaMallocManaged((void**)&gpuWall, sizeof(int)*(rows*cols - cols));
-	
-	int seed = M_SEED;
-	srand(seed);
-
-	for (int i = 0; i < rows; i++)
-        {
-        	for (int j = 0; j < cols; j++)
-        	{
-			if (i == 0) {
-				gpuResult[0][j] = rand() % 10;
-				data[i*cols + j] = gpuResult[0][j];
-			} else {
-				gpuWall[(i-1)*cols + j] = rand() %10;
-				data[i*cols + j] = gpuWall[(i-1)*cols + j];
-			}
-        	}
-    	}
-#ifdef BENCH_PRINT
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < cols; j++)
-        {
-		if (i == 0) {
-			printf("%d ", gpuResult[0][j]);
-		} else {
-			printf("%d ", gpuWall[(i-1)*cols + j]);
-		}
-        }
-        printf("\n") ;
-    }
+	data = new int[rows*cols];
+	wall = new int*[rows];
+	for(int n=0; n<rows; n++)
+		wall[n]=data+cols*n;
+	result = new int[cols];
+	
+	int seed = M_SEED;
+	srand(seed);
+
+	for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            wall[i][j] = rand() % 10;
+        }
+    }
+#ifdef BENCH_PRINT
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            printf("%d ",wall[i][j]) ;
+        }
+        printf("\n") ;
+    }
 #endif
 }
 
@@ -172,27 +162,15 @@ int calc_path(int *gpuWall, int *gpuResult[2], int rows, int cols, \
         dim3 dimBlock(BLOCK_SIZE);
         dim3 dimGrid(blockCols);  
 	
-#ifdef PREF
-	cudaStream_t stream3;
-	cudaStreamCreate(&stream3);
-#endif
-
         int src = 1, dst = 0;
 	for (int t = 0; t < rows-1; t+=pyramid_height) {
             int temp = src;
             src = dst;
             dst = temp;
-#ifdef PREF
-            dynproc_kernel<<<dimGrid, dimBlock, 0, stream3>>>(
+            dynproc_kernel<<<dimGrid, dimBlock>>>(
                 MIN(pyramid_height, rows-t-1), 
                 gpuWall, gpuResult[src], gpuResult[dst],
                 cols,rows, t, borderCols);
-#else
-	    dynproc_kernel<<<dimGrid, dimBlock>>>(
-                MIN(pyramid_height, rows-t-1), 
-                gpuWall, gpuResult[src], gpuResult[dst],
-                cols,rows, t, borderCols);
-#endif
 	}
         return dst;
 }
@@ -220,32 +198,29 @@ void run(int argc, char** argv)
     printf("pyramidHeight: %d\ngridSize: [%d]\nborder:[%d]\nblockSize: %d\nblockGrid:[%d]\ntargetBlock:[%d]\n",\
 	pyramid_height, cols, borderCols, BLOCK_SIZE, blockCols, smallBlockCol);
 	
+    int *gpuWall, *gpuResult[2];
     int size = rows*cols;
 
-#ifdef PREF
-    cudaStream_t stream1;
-    cudaStreamCreate(&stream1);
+    cudaMalloc((void**)&gpuResult[0], sizeof(int)*cols);
+    cudaMalloc((void**)&gpuResult[1], sizeof(int)*cols);
+    cudaMemcpy(gpuResult[0], data, sizeof(int)*cols, cudaMemcpyHostToDevice);
+    cudaMalloc((void**)&gpuWall, sizeof(int)*(size-cols));
+    cudaMemcpy(gpuWall, data+cols, sizeof(int)*(size-cols), cudaMemcpyHostToDevice);
 
-    cudaStream_t stream2;
-    cudaStreamCreate(&stream2);
-
-    cudaMemPrefetchAsync( gpuResult[0], sizeof(int)*cols, DEVICE, stream1);
-    cudaMemPrefetchAsync( gpuWall, sizeof(int)*(size-cols), DEVICE, stream2);
-#endif
 
     int final_ret = calc_path(gpuWall, gpuResult, rows, cols, \
 	 pyramid_height, blockCols, borderCols);
 
-    cudaDeviceSynchronize();
+    cudaMemcpy(result, gpuResult[final_ret], sizeof(int)*cols, cudaMemcpyDeviceToHost);
 
 
-#ifdef BENCH_PRINT
-    for (int i = 0; i < cols; i++)
-            printf("%d ",data[i]) ;
-    printf("\n") ;
-    for (int i = 0; i < cols; i++)
-            printf("%d ",gpuResult[final_ret][i]) ;
-    printf("\n") ;
+#ifdef BENCH_PRINT
+    for (int i = 0; i < cols; i++)
+            printf("%d ",data[i]) ;
+    printf("\n") ;
+    for (int i = 0; i < cols; i++)
+            printf("%d ",result[i]) ;
+    printf("\n") ;
 #endif
 
 
@@ -254,10 +229,8 @@ void run(int argc, char** argv)
     cudaFree(gpuResult[1]);
 
     delete [] data;
+    delete [] wall;
+    delete [] result;
 
 }
-
-
-
-
 
