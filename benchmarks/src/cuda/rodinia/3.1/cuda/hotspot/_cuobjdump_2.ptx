@@ -1,0 +1,255 @@
+
+
+
+
+
+
+
+.version 5.0
+.target sm_35
+.address_size 64
+
+
+
+
+
+
+.visible .entry _Z14calculate_tempiPfS_S_iiiiffffff(
+.param .u32 _Z14calculate_tempiPfS_S_iiiiffffff_param_0,
+.param .u64 _Z14calculate_tempiPfS_S_iiiiffffff_param_1,
+.param .u64 _Z14calculate_tempiPfS_S_iiiiffffff_param_2,
+.param .u64 _Z14calculate_tempiPfS_S_iiiiffffff_param_3,
+.param .u32 _Z14calculate_tempiPfS_S_iiiiffffff_param_4,
+.param .u32 _Z14calculate_tempiPfS_S_iiiiffffff_param_5,
+.param .u32 _Z14calculate_tempiPfS_S_iiiiffffff_param_6,
+.param .u32 _Z14calculate_tempiPfS_S_iiiiffffff_param_7,
+.param .f32 _Z14calculate_tempiPfS_S_iiiiffffff_param_8,
+.param .f32 _Z14calculate_tempiPfS_S_iiiiffffff_param_9,
+.param .f32 _Z14calculate_tempiPfS_S_iiiiffffff_param_10,
+.param .f32 _Z14calculate_tempiPfS_S_iiiiffffff_param_11,
+.param .f32 _Z14calculate_tempiPfS_S_iiiiffffff_param_12,
+.param .f32 _Z14calculate_tempiPfS_S_iiiiffffff_param_13
+)
+{
+.reg .pred %p<33>;
+.reg .b16 %rs<9>;
+.reg .f32 %f<26>;
+.reg .b32 %r<58>;
+.reg .f64 %fd<16>;
+.reg .b64 %rd<41>;
+
+	.shared .align 4 .b8 _Z14calculate_tempiPfS_S_iiiiffffff$__cuda_local_var_17857_39_non_const_temp_on_cuda[1024];
+
+	.shared .align 4 .b8 _Z14calculate_tempiPfS_S_iiiiffffff$__cuda_local_var_17858_39_non_const_power_on_cuda[1024];
+
+	.shared .align 4 .b8 _Z14calculate_tempiPfS_S_iiiiffffff$__cuda_local_var_17859_39_non_const_temp_t[1024];
+
+ld.param.u32 %r20, [_Z14calculate_tempiPfS_S_iiiiffffff_param_0];
+ld.param.u64 %rd10, [_Z14calculate_tempiPfS_S_iiiiffffff_param_1];
+ld.param.u64 %rd11, [_Z14calculate_tempiPfS_S_iiiiffffff_param_2];
+ld.param.u64 %rd12, [_Z14calculate_tempiPfS_S_iiiiffffff_param_3];
+ld.param.u32 %r21, [_Z14calculate_tempiPfS_S_iiiiffffff_param_4];
+ld.param.u32 %r22, [_Z14calculate_tempiPfS_S_iiiiffffff_param_5];
+ld.param.u32 %r23, [_Z14calculate_tempiPfS_S_iiiiffffff_param_6];
+ld.param.u32 %r24, [_Z14calculate_tempiPfS_S_iiiiffffff_param_7];
+ld.param.f32 %f2, [_Z14calculate_tempiPfS_S_iiiiffffff_param_8];
+ld.param.f32 %f3, [_Z14calculate_tempiPfS_S_iiiiffffff_param_9];
+ld.param.f32 %f4, [_Z14calculate_tempiPfS_S_iiiiffffff_param_10];
+ld.param.f32 %f5, [_Z14calculate_tempiPfS_S_iiiiffffff_param_11];
+ld.param.f32 %f6, [_Z14calculate_tempiPfS_S_iiiiffffff_param_12];
+shl.b32 %r25, %r20, 1;
+mov.u32 %r26, 16;
+sub.s32 %r27, %r26, %r25;
+mov.u32 %r28, %ctaid.y;
+mul.lo.s32 %r29, %r28, %r27;
+sub.s32 %r1, %r29, %r24;
+mov.u32 %r30, %ctaid.x;
+mul.lo.s32 %r31, %r30, %r27;
+sub.s32 %r2, %r31, %r23;
+mov.u32 %r3, %tid.y;
+add.s32 %r32, %r1, %r3;
+mov.u32 %r4, %tid.x;
+add.s32 %r33, %r2, %r4;
+mad.lo.s32 %r5, %r32, %r21, %r33;
+setp.gt.s32	%p1, %r32, -1;
+add.s32 %r6, %r22, -1;
+setp.le.s32	%p2, %r32, %r6;
+and.pred %p3, %p1, %p2;
+setp.gt.s32	%p4, %r33, -1;
+add.s32 %r7, %r21, -1;
+setp.le.s32	%p5, %r33, %r7;
+and.pred %p6, %p4, %p5;
+and.pred %p7, %p3, %p6;
+cvt.s64.s32	%rd1, %r4;
+cvt.s64.s32	%rd2, %r3;
+mul.wide.s32 %rd13, %r3, 64;
+mov.u64 %rd14, _Z14calculate_tempiPfS_S_iiiiffffff$__cuda_local_var_17857_39_non_const_temp_on_cuda;
+add.s64 %rd15, %rd14, %rd13;
+mul.wide.s32 %rd16, %r4, 4;
+add.s64 %rd3, %rd15, %rd16;
+mov.u64 %rd17, _Z14calculate_tempiPfS_S_iiiiffffff$__cuda_local_var_17858_39_non_const_power_on_cuda;
+add.s64 %rd18, %rd17, %rd13;
+add.s64 %rd4, %rd18, %rd16;
+@!%p7 bra BB0_2;
+bra.uni BB0_1;
+
+BB0_1:
+cvta.to.global.u64 %rd19, %rd11;
+mul.wide.s32 %rd20, %r5, 4;
+add.s64 %rd21, %rd19, %rd20;
+ld.global.f32 %f7, [%rd21];
+st.shared.f32 [%rd3], %f7;
+cvta.to.global.u64 %rd22, %rd10;
+add.s64 %rd23, %rd22, %rd20;
+ld.global.f32 %f8, [%rd23];
+st.shared.f32 [%rd4], %f8;
+
+BB0_2:
+add.s32 %r8, %r1, 15;
+add.s32 %r9, %r2, 15;
+bar.sync 0;
+neg.s32 %r34, %r1;
+shr.s32 %r35, %r1, 31;
+and.b32 %r10, %r35, %r34;
+mov.u32 %r36, -15;
+sub.s32 %r37, %r36, %r1;
+add.s32 %r38, %r22, %r37;
+add.s32 %r39, %r38, 14;
+setp.gt.s32	%p8, %r8, %r6;
+selp.b32	%r11, %r39, 15, %p8;
+neg.s32 %r40, %r2;
+shr.s32 %r41, %r2, 31;
+and.b32 %r12, %r41, %r40;
+sub.s32 %r42, %r36, %r2;
+add.s32 %r43, %r21, %r42;
+add.s32 %r44, %r43, 14;
+setp.gt.s32	%p9, %r9, %r7;
+selp.b32	%r13, %r44, 15, %p9;
+mov.u64 %rd25, _Z14calculate_tempiPfS_S_iiiiffffff$__cuda_local_var_17859_39_non_const_temp_t;
+add.s64 %rd26, %rd25, %rd13;
+add.s64 %rd5, %rd26, %rd16;
+setp.lt.s32	%p10, %r20, 1;
+@%p10 bra BB0_11;
+
+div.rn.f32 %f9, %f6, %f2;
+rcp.rn.f32 %f10, %f3;
+rcp.rn.f32 %f11, %f4;
+rcp.rn.f32 %f1, %f5;
+setp.gt.s32	%p11, %r3, %r10;
+add.s32 %r46, %r3, -1;
+selp.b32	%r47, %r46, %r10, %p11;
+setp.lt.s32	%p12, %r3, %r11;
+add.s32 %r48, %r3, 1;
+selp.b32	%r49, %r48, %r11, %p12;
+setp.gt.s32	%p13, %r4, %r12;
+add.s32 %r50, %r4, -1;
+selp.b32	%r51, %r50, %r12, %p13;
+setp.lt.s32	%p14, %r4, %r13;
+add.s32 %r52, %r4, 1;
+selp.b32	%r53, %r52, %r13, %p14;
+cvt.f64.f32	%fd1, %f9;
+mul.wide.s32 %rd28, %r49, 64;
+add.s64 %rd30, %rd14, %rd28;
+shl.b64 %rd31, %rd1, 2;
+add.s64 %rd6, %rd30, %rd31;
+mul.wide.s32 %rd32, %r47, 64;
+add.s64 %rd33, %rd14, %rd32;
+add.s64 %rd7, %rd33, %rd31;
+cvt.f64.f32	%fd2, %f11;
+shl.b64 %rd34, %rd2, 6;
+add.s64 %rd35, %rd14, %rd34;
+mul.wide.s32 %rd36, %r53, 4;
+add.s64 %rd8, %rd35, %rd36;
+mul.wide.s32 %rd37, %r51, 4;
+add.s64 %rd9, %rd35, %rd37;
+cvt.f64.f32	%fd3, %f10;
+mov.u32 %r54, 1;
+sub.s32 %r56, %r54, %r20;
+mov.u32 %r57, 0;
+
+BB0_4:
+mov.u32 %r55, 14;
+sub.s32 %r17, %r55, %r57;
+setp.le.s32	%p15, %r4, %r17;
+add.s32 %r57, %r57, 1;
+setp.ge.s32	%p16, %r4, %r57;
+and.pred %p17, %p15, %p16;
+mov.u16 %rs8, 0;
+@!%p17 bra BB0_7;
+bra.uni BB0_5;
+
+BB0_5:
+setp.gt.s32	%p18, %r3, %r17;
+setp.lt.s32	%p19, %r3, %r57;
+or.pred %p20, %p19, %p18;
+setp.lt.s32	%p21, %r4, %r12;
+setp.gt.s32	%p22, %r4, %r13;
+or.pred %p23, %p21, %p22;
+or.pred %p24, %p20, %p23;
+setp.lt.s32	%p25, %r3, %r10;
+setp.gt.s32	%p26, %r3, %r11;
+or.pred %p27, %p25, %p26;
+or.pred %p28, %p24, %p27;
+@%p28 bra BB0_7;
+
+ld.shared.f32 %f12, [%rd3];
+cvt.f64.f32	%fd4, %f12;
+ld.shared.f32 %f13, [%rd4];
+cvt.f64.f32	%fd5, %f13;
+ld.shared.f32 %f14, [%rd7];
+ld.shared.f32 %f15, [%rd6];
+add.f32 %f16, %f15, %f14;
+cvt.f64.f32	%fd6, %f16;
+add.f64 %fd7, %fd4, %fd4;
+sub.f64 %fd8, %fd6, %fd7;
+fma.rn.f64 %fd9, %fd2, %fd8, %fd5;
+ld.shared.f32 %f17, [%rd9];
+ld.shared.f32 %f18, [%rd8];
+add.f32 %f19, %f18, %f17;
+cvt.f64.f32	%fd10, %f19;
+sub.f64 %fd11, %fd10, %fd7;
+fma.rn.f64 %fd12, %fd3, %fd11, %fd9;
+mov.f32 %f20, 0f42A00000;
+sub.f32 %f21, %f20, %f12;
+mul.f32 %f22, %f1, %f21;
+cvt.f64.f32	%fd13, %f22;
+add.f64 %fd14, %fd13, %fd12;
+fma.rn.f64 %fd15, %fd1, %fd14, %fd4;
+cvt.rn.f32.f64	%f23, %fd15;
+st.shared.f32 [%rd5], %f23;
+mov.u16 %rs8, 1;
+
+BB0_7:
+bar.sync 0;
+setp.eq.s32	%p29, %r56, 0;
+@%p29 bra BB0_11;
+
+setp.eq.s16	%p30, %rs8, 0;
+@%p30 bra BB0_10;
+
+ld.shared.f32 %f24, [%rd5];
+st.shared.f32 [%rd3], %f24;
+
+BB0_10:
+bar.sync 0;
+add.s32 %r56, %r56, 1;
+setp.lt.s32	%p31, %r57, %r20;
+@%p31 bra BB0_4;
+
+BB0_11:
+and.b16 %rs7, %rs8, 255;
+setp.eq.s16	%p32, %rs7, 0;
+@%p32 bra BB0_13;
+
+cvta.to.global.u64 %rd38, %rd12;
+ld.shared.f32 %f25, [%rd5];
+mul.wide.s32 %rd39, %r5, 4;
+add.s64 %rd40, %rd38, %rd39;
+st.global.f32 [%rd40], %f25;
+
+BB0_13:
+ret;
+}
+
+
+

@@ -102,42 +102,51 @@ kernel_gpu_cuda_wrapper(record *records,
 	//	recordsD
 	//==================================================50
 
-	record *recordsD;
-	cudaMalloc((void**)&recordsD, records_mem);
-	checkCUDAError("cudaMalloc  recordsD");
+	//record *recordsD;
+	//cudaMalloc((void**)&recordsD, records_mem);
+	//checkCUDAError("cudaMalloc  recordsD");
+	//record *records;
+	//cudaMallocManaged(&records, records_mem);
 
 	//==================================================50
 	//	knodesD
 	//==================================================50
 
-	knode *knodesD;
-	cudaMalloc((void**)&knodesD, knodes_mem);
-	checkCUDAError("cudaMalloc  recordsD");
-
+	//knode *knodesD;
+	//cudaMalloc((void**)&knodesD, knodes_mem);
+	//checkCUDAError("cudaMalloc  recordsD");
+	//knode *knodes;
+	//cudaMallocManaged(&knodes,knodes_mem);
 	//==================================================50
 	//	currKnodeD
 	//==================================================50
 
-	long *currKnodeD;
-	cudaMalloc((void**)&currKnodeD, count*sizeof(long));
-	checkCUDAError("cudaMalloc  currKnodeD");
-
+	//long *currKnodeD;
+	//cudaMalloc((void**)&currKnodeD, count*sizeof(long));
+	//checkCUDAError("cudaMalloc  currKnodeD");
+	//long *currKnode;
+	//cudaMallocManaged(&currKnode, count*sizeof(long));
 	//==================================================50
 	//	offsetD
 	//==================================================50
-
+	/*
 	long *offsetD;
 	cudaMalloc((void**)&offsetD, count*sizeof(long));
 	checkCUDAError("cudaMalloc  offsetD");
+	*/
+	//long *offset;
+	//cudaMallocManaged(&offset, count*sizeof(long));
 
 	//==================================================50
 	//	keysD
 	//==================================================50
-
+	/*
 	int *keysD;
 	cudaMalloc((void**)&keysD, count*sizeof(int));
 	checkCUDAError("cudaMalloc  keysD");
-
+	*/
+	//int *keys;
+	//cudaMallocManaged(&keys, count*sizeof(int));
 	//====================================================================================================100
 	//	DEVICE IN/OUT
 	//====================================================================================================100
@@ -145,10 +154,13 @@ kernel_gpu_cuda_wrapper(record *records,
 	//==================================================50
 	//	ansD
 	//==================================================50
-
+	/*
 	record *ansD;
 	cudaMalloc((void**)&ansD, count*sizeof(record));
 	checkCUDAError("cudaMalloc ansD");
+	*/
+	//record *ans;
+	//cudaMallocManaged(&ans, count*sizeof(record));
 
 	time2 = get_time();
 
@@ -158,42 +170,43 @@ kernel_gpu_cuda_wrapper(record *records,
 
 	//====================================================================================================100
 	//	GPU MEMORY				(MALLOC) COPY IN
+	
 	//====================================================================================================100
 
 	//==================================================50
 	//	recordsD
 	//==================================================50
 
-	cudaMemcpy(recordsD, records, records_mem, cudaMemcpyHostToDevice);
-	checkCUDAError("cudaMalloc cudaMemcpy memD");
+	//cudaMemcpy(recordsD, records, records_mem, cudaMemcpyHostToDevice);
+	//checkCUDAError("cudaMalloc cudaMemcpy memD");
 
 	//==================================================50
 	//	knodesD
 	//==================================================50
 
-	cudaMemcpy(knodesD, knodes, knodes_mem, cudaMemcpyHostToDevice);
-	checkCUDAError("cudaMalloc cudaMemcpy memD");
+	//cudaMemcpy(knodesD, knodes, knodes_mem, cudaMemcpyHostToDevice);
+	//checkCUDAError("cudaMalloc cudaMemcpy memD");
 
 	//==================================================50
 	//	currKnodeD
 	//==================================================50
 
-	cudaMemcpy(currKnodeD, currKnode, count*sizeof(long), cudaMemcpyHostToDevice);
-	checkCUDAError("cudaMalloc cudaMemcpy currKnodeD");
+	//cudaMemcpy(currKnodeD, currKnode, count*sizeof(long), cudaMemcpyHostToDevice);
+	//checkCUDAError("cudaMalloc cudaMemcpy currKnodeD");
 
 	//==================================================50
 	//	offsetD
 	//==================================================50
 
-	cudaMemcpy(offsetD, offset, count*sizeof(long), cudaMemcpyHostToDevice);
-	checkCUDAError("cudaMalloc cudaMemcpy offsetD");
+	//cudaMemcpy(offsetD, offset, count*sizeof(long), cudaMemcpyHostToDevice);
+	//checkCUDAError("cudaMalloc cudaMemcpy offsetD");
 
 	//==================================================50
 	//	keysD
 	//==================================================50
 
-	cudaMemcpy(keysD, keys, count*sizeof(int), cudaMemcpyHostToDevice);
-	checkCUDAError("cudaMalloc cudaMemcpy keysD");
+	//cudaMemcpy(keysD, keys, count*sizeof(int), cudaMemcpyHostToDevice);
+	//checkCUDAError("cudaMalloc cudaMemcpy keysD");
 
 	//====================================================================================================100
 	//	DEVICE IN/OUT
@@ -203,8 +216,8 @@ kernel_gpu_cuda_wrapper(record *records,
 	//	ansD
 	//==================================================50
 
-	cudaMemcpy(ansD, ans, count*sizeof(record), cudaMemcpyHostToDevice);
-	checkCUDAError("cudaMalloc cudaMemcpy ansD");
+	//cudaMemcpy(ansD, ans, count*sizeof(record), cudaMemcpyHostToDevice);
+	//checkCUDAError("cudaMalloc cudaMemcpy ansD");
 
 	time3 = get_time();
 
@@ -214,15 +227,15 @@ kernel_gpu_cuda_wrapper(record *records,
 
 	findK<<<numBlocks, threadsPerBlock>>>(	maxheight,
 
-											knodesD,
+											knodes,
 											knodes_elem,
 
-											recordsD,
+											records,
 
-											currKnodeD,
-											offsetD,
-											keysD,
-											ansD);
+											currKnode,
+											offset,
+											keys,
+											ans);
 	cudaThreadSynchronize();
 	checkCUDAError("findK");
 
@@ -239,9 +252,10 @@ kernel_gpu_cuda_wrapper(record *records,
 	//==================================================50
 	//	ansD
 	//==================================================50
-
-	cudaMemcpy(ans, ansD, count*sizeof(record), cudaMemcpyDeviceToHost);
-	checkCUDAError("cudaMemcpy ansD");
+	
+	cudaDeviceSynchronize();
+	//cudaMemcpy(ans, ansD, count*sizeof(record), cudaMemcpyDeviceToHost);
+	//checkCUDAError("cudaMemcpy ansD");
 
 	time5 = get_time();
 
@@ -249,13 +263,13 @@ kernel_gpu_cuda_wrapper(record *records,
 	//	GPU MEMORY DEALLOCATION
 	//======================================================================================================================================================150
 
-	cudaFree(recordsD);
-	cudaFree(knodesD);
+	//cudaFree(recordsD);
+	//cudaFree(knodesD);
 
-	cudaFree(currKnodeD);
-	cudaFree(offsetD);
-	cudaFree(keysD);
-	cudaFree(ansD);
+	//cudaFree(currKnodeD);
+	//cudaFree(offsetD);
+	//cudaFree(keysD);
+	//cudaFree(ansD);
 
 	time6 = get_time();
 

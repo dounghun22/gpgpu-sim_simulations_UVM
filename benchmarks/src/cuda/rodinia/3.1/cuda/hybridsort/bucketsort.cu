@@ -31,7 +31,8 @@ void calcPivotPoints(float *histogram, int histosize, int listsize,
 // Globals
 ////////////////////////////////////////////////////////////////////////////////
 const int histosize = 1024; 
-unsigned int* h_offsets = NULL; 
+unsigned int* h_offsets = NULL;
+unsigned int* offsets = NULL; 
 unsigned int* d_offsets = NULL; 
 int *d_indice = NULL; 
 float *pivotPoints = NULL; 
@@ -45,18 +46,22 @@ unsigned int *l_offsets = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 void init_bucketsort(int listsize)
 {
-	h_offsets = (unsigned int *) malloc(histosize * sizeof(int)); 
-    checkCudaErrors(cudaMalloc((void**) &d_offsets, histosize * sizeof(unsigned int)));
-	pivotPoints = (float *)malloc(DIVISIONS * sizeof(float)); 
+	//h_offsets = (unsigned int *) malloc(histosize * sizeof(int)); 
+	//h_offsets = unsigned int*;
+    checkCudaErrors(cudaMallocManaged(&d_offsets, histosize * sizeof(unsigned int)));
 
-    checkCudaErrors(cudaMalloc((void**) &d_indice, listsize * sizeof(int)));
+	//pivotPoints = (float *)malloc(DIVISIONS * sizeof(float)); 
+	//pivotPoints = float *; 
+	checkCudaErrors(cudaMallocManaged(&pivotPoints, DIVISIONS * sizeof(float)));
+
+    checkCudaErrors(cudaMallocManaged(&d_indice, listsize * sizeof(int)));
 	historesult = (float *)malloc(histosize * sizeof(float)); 
 
-	checkCudaErrors(cudaMalloc((void**) &l_pivotpoints, DIVISIONS * sizeof(float))); 
-	checkCudaErrors(cudaMalloc((void**) &l_offsets, DIVISIONS * sizeof(int))); 
+	//checkCudaErrors(cudaMalloc((void**) &l_pivotpoints, DIVISIONS * sizeof(float))); 
+	//checkCudaErrors(cudaMalloc((void**) &l_offsets, DIVISIONS * sizeof(int))); 
 
 	int blocks = ((listsize - 1) / (BUCKET_THREAD_N * BUCKET_BAND)) + 1; 
-	checkCudaErrors(cudaMalloc((void**) &d_prefixoffsets, blocks * BUCKET_BLOCK_MEMORY * sizeof(int))); 
+	checkCudaErrors(cudaMallocManaged(&d_prefixoffsets, blocks * BUCKET_BLOCK_MEMORY * sizeof(int))); 
 
 	initHistogram1024();
 }
@@ -68,10 +73,10 @@ void finish_bucketsort()
 {
     checkCudaErrors(cudaFree(d_indice));
 	checkCudaErrors(cudaFree(d_offsets));
-	checkCudaErrors(cudaFree(l_pivotpoints));
-	checkCudaErrors(cudaFree(l_offsets)); 
-	free(pivotPoints); 
-	free(h_offsets);
+	//checkCudaErrors(cudaFree(l_pivotpoints));
+	//checkCudaErrors(cudaFree(l_offsets)); 
+	cudaFree(pivotPoints); 
+	//free(h_offsets);
 	free(historesult);	
 	checkCudaErrors(cudaFree(d_prefixoffsets)); 
 	closeHistogram1024();
@@ -123,7 +128,7 @@ threads.x = BUCKET_WG_SIZE_0;
 	bucketprefixoffset <<< grid, threads >>>(d_prefixoffsets, d_offsets, blocks); 	
 
 	// copy the sizes from device to host
-	cudaMemcpy(h_offsets, d_offsets, DIVISIONS * sizeof(int), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(h_offsets, d_offsets, DIVISIONS * sizeof(int), cudaMemcpyDeviceToHost);
 
 	origOffsets[0] = 0;
 	for(int i=0; i<DIVISIONS; i++){
@@ -142,7 +147,7 @@ threads.x = BUCKET_WG_SIZE_0;
 	h_offsets[0] = 0; 
 	///////////////////////////////////////////////////////////////////////////
 	// Finally, sort the lot
-	///////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////
 	cudaMemcpy(l_offsets, h_offsets, (DIVISIONS)*sizeof(int), cudaMemcpyHostToDevice); 
 	cudaMemset(d_output, 0x0, (listsize + (DIVISIONS*4))*sizeof(float)); 
     threads.x = BUCKET_THREAD_N; 

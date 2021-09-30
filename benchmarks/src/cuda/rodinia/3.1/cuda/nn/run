@@ -1,1 +1,1 @@
-./nn filelist_4 -r 5 -lat 30 -lng 90
+./nn ./nn_rodinia-3.1/data/filelist_4 -r 5 -lat 30 -lng 90
