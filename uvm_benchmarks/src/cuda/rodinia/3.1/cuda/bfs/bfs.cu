@@ -147,7 +147,7 @@ void BFSGraph( int argc, char** argv)
 	
 	//make a bool to check if the execution is over
 	bool *d_over;
-	cudaMalloc( (void**) &d_over, sizeof(bool));
+	cudaMallocManaged( &d_over, sizeof(bool));
 
 	printf("Copied Everything to GPU memory\n");
 
@@ -196,7 +196,8 @@ void BFSGraph( int argc, char** argv)
 	{
 		//if no thread changes this value then the loop stops
 		stop=false;
-		cudaMemcpy( d_over, &stop, sizeof(bool), cudaMemcpyHostToDevice);
+		*d_over = false;
+		//cudaMemcpy( d_over, &stop, sizeof(bool), cudaMemcpyHostToDevice);
 #ifdef PREF
 		kernel<<< grid,threads,0,stream7>>>(graph_nodes,graph_edges,graph_mask,updating_graph_mask,graph_visited,cost,no_of_nodes);
 
@@ -212,10 +213,10 @@ void BFSGraph( int argc, char** argv)
 		
 #endif
 
-		cudaMemcpy( &stop, d_over, sizeof(bool), cudaMemcpyDeviceToHost) ;
+		//cudaMemcpy( &stop, d_over, sizeof(bool), cudaMemcpyDeviceToHost) ;
 		k++;
 	}
-	while(stop);
+	while(*d_over);
 
 	cudaDeviceSynchronize();
 

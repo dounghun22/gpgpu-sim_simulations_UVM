@@ -83,11 +83,11 @@ runTest( int argc, char** argv)
 	c  = (float *)malloc(sizeof(float)* size_I) ;
 
 	//Allocate device memory
-    	cudaMalloc((void**)& C_cuda, sizeof(float)* size_I);
-	cudaMalloc((void**)& E_C, sizeof(float)* size_I);
-	cudaMalloc((void**)& W_C, sizeof(float)* size_I);
-	cudaMalloc((void**)& S_C, sizeof(float)* size_I);
-	cudaMalloc((void**)& N_C, sizeof(float)* size_I);
+    cudaMallocManaged((void**)& C_cuda, sizeof(float)* size_I);
+	cudaMallocManaged((void**)& E_C, sizeof(float)* size_I);
+	cudaMallocManaged((void**)& W_C, sizeof(float)* size_I);
+	cudaMallocManaged((void**)& S_C, sizeof(float)* size_I);
+	cudaMallocManaged((void**)& N_C, sizeof(float)* size_I);
 	
 	//Allocate managed memory
     	cudaMallocManaged((void**)& J_shared, sizeof(float)* size_I);
@@ -167,7 +167,7 @@ runTest( int argc, char** argv)
 	free(I);
 	free(c);
 
-    	cudaFree(C_cuda);
+    cudaFree(C_cuda);
 	cudaFree(E_C);
 	cudaFree(W_C);
 	cudaFree(N_C);

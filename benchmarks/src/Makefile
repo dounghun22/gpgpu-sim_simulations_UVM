@@ -18,8 +18,9 @@ clean_data:
 	./clean_data.sh
 
 data:
-	mkdir -p $(BINDIR)/$(BINSUBDIR)/
-	cd ../ && bash ./get_data.sh
+	#mkdir -p $(BINDIR)/$(BINSUBDIR)/
+	#cd ../ && bash ./get_data.sh\#
+	cp -r ../data_dirs/cuda/rodinia/3.1 ../bin/8.0/release/rodinia-3.1/DATA
 
 ###################################################################################################3
 # Rodinia 2.0 Functional Test Stuff
@@ -174,7 +175,8 @@ rodinia-3.1:
 	mv $(BINDIR)/$(BINSUBDIR)/needle $(BINDIR)/$(BINSUBDIR)/nw-rodinia-3.1
 	mv $(BINDIR)/$(BINSUBDIR)/streamcluster $(BINDIR)/$(BINSUBDIR)/streamcluster-rodinia-3.1
 	mv $(BINDIR)/mummergpu $(BINDIR)/$(BINSUBDIR)/mummergpu-rodinia-3.1
-
+	cd ../ && python auto_mkdir.py 
+	cd ../ && python auto_cpy_run.py
 ispass-2009:
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/AES
 	$(SETENV) make $(MAKE_ARGS) noinline=$(noinline) -C cuda/ispass-2009/BFS
