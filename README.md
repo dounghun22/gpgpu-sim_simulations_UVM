@@ -1,6 +1,6 @@
 # A simulation repository that compliments gpgpu-sim.
 
-##Quick Compile Command
+## Quick Compile Command
     $ sh run_copy.sh
     $ cd uvm_benchamrks/src
     $ source setup_environment #SDK Compile Error Is OK.
