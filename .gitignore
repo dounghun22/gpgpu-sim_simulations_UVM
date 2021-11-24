@@ -9,3 +9,10 @@ benchmarks/src/cuda/dragon_li/cdp_bin/
 *.DS_Store
 benchmarks/bin/*
 uvm_benchmarks/bin/*
+uvm_benchmarks/data_dirs/*.tgz
+uvm_benchmarks/data_dirs/dragon
+uvm_benchmarks/data_dirs/pannotia
+uvm_benchmarks/data_dirs/proxy-apps-doe
+uvm_benchmarks/src/cuda/dragon_li/cdp_bin/
+data_dirs/
+
