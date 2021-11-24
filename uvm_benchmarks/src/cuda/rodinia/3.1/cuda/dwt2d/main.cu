@@ -383,7 +383,7 @@ int main(int argc, char **argv)
         else // 5/3
             processDWT<int>(d, forward, writeVisual);
     }
-
+	cudaDeviceSynchronize();
     //writeComponent(r_cuda, pixWidth, pixHeight, srcFilename, ".g");
     //writeComponent(g_wave_cuda, 512000, ".g");
     //writeComponent(g_cuda, componentSize, ".g");
