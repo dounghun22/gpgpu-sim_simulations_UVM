@@ -1,5 +1,14 @@
 # A simulation repository that compliments gpgpu-sim.
 
+##Quick Compile Command
+    $ sh run_copy.sh
+    $ cd uvm_benchamrks/src
+    $ source setup_environment #SDK Compile Error Is OK.
+    $ srouce setup_environment #Again
+    $ make -j10 rodinia-3.1 # Only Rodinia Support In UVM
+    $ cd ../benchmarks/src && source setup_environment
+    $ make -j10 rodinia-3.1 #Other benchmarks are available
+
 ## Dependencies
 
 This package is meant to be run on a modern linux distro and requires python and torque to be installed.
