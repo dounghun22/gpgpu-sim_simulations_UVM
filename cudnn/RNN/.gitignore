@@ -1,2 +1,9 @@
 RNN
 RNN_example.o
+*.config
+config*
+_app_cuda*
+*.ptx
+*.ptxas
+_cuobjdump*
+gpgpu*

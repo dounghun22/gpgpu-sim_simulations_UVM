@@ -1,1 +1,8 @@
 sum.out
+*.config
+config*
+_app_cuda*
+*.ptx
+*.ptxas
+_cuobjdump*
+gpgpu*
