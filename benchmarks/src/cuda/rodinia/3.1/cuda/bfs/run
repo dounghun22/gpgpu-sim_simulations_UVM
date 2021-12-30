@@ -1,1 +1,1 @@
-./bfs ../../data/bfs/graph1MW_6.txt
+./bfs ../DATA/bfs-rodinia-3.1/data/graph65536.txt

@@ -114,37 +114,37 @@ int work_2(	int xmax,
 
 	y_mem = workload * (xmax+1) * EQUATIONS * sizeof(fp);
 	y= (fp *) malloc(y_mem);
-	cudaMalloc((void **)&d_y, y_mem);
+	cudaMallocManaged((void **)&d_y, y_mem);
 
 	x_mem = workload * (xmax+1) * sizeof(fp);
 	x= (fp *) malloc(x_mem);
-	cudaMalloc((void **)&d_x, x_mem);
+	cudaMallocManaged((void **)&d_x, x_mem);
 
 	params_mem = workload * PARAMETERS * sizeof(fp);
 	params= (fp *) malloc(params_mem);
-	cudaMalloc((void **)&d_params, params_mem);
+	cudaMallocManaged((void **)&d_params, params_mem);
 
 	//========================================40
 	//		TEMPORARY SOLVER VARIABLES
 	//========================================40
 
 	com_mem = workload * 3 * sizeof(fp);
-	cudaMalloc((void **)&d_com, com_mem);
+	cudaMallocManaged((void **)&d_com, com_mem);
 
 	err_mem = workload * EQUATIONS * sizeof(fp);
-	cudaMalloc((void **)&d_err, err_mem);
+	cudaMallocManaged((void **)&d_err, err_mem);
 
 	scale_mem = workload * EQUATIONS * sizeof(fp);
-	cudaMalloc((void **)&d_scale, scale_mem);
+	cudaMallocManaged((void **)&d_scale, scale_mem);
 
 	yy_mem = workload * EQUATIONS * sizeof(fp);
-	cudaMalloc((void **)&d_yy, yy_mem);
+	cudaMallocManaged((void **)&d_yy, yy_mem);
 
 	initvalu_temp_mem = workload * EQUATIONS * sizeof(fp);
-	cudaMalloc((void **)&d_initvalu_temp, initvalu_temp_mem);
+	cudaMallocManaged((void **)&d_initvalu_temp, initvalu_temp_mem);
 
 	finavalu_temp_mem = workload * 13* EQUATIONS * sizeof(fp);
-	cudaMalloc((void **)&d_finavalu_temp, finavalu_temp_mem);
+	cudaMallocManaged((void **)&d_finavalu_temp, finavalu_temp_mem);
 
 	time2 = get_time();
 
@@ -160,7 +160,7 @@ int work_2(	int xmax,
 		pointer = i * (xmax+1) + 0;
 		x[pointer] = 0;
 	}
-	cudaMemcpy(d_x, x, x_mem, cudaMemcpyHostToDevice);
+	memcpy(d_x, x, x_mem);
 
 	//========================================40
 	//		Y
@@ -174,7 +174,7 @@ int work_2(	int xmax,
 					1,
 					0);
 	}
-	cudaMemcpy(d_y, y, y_mem, cudaMemcpyHostToDevice);
+	memcpy(d_y, y, y_mem);
 
 	//========================================40
 	//		PARAMS
@@ -188,7 +188,7 @@ int work_2(	int xmax,
 					1,
 					0);
 	}
-	cudaMemcpy(d_params, params, params_mem, cudaMemcpyHostToDevice);
+	memcpy(d_params, params, params_mem);
 
 	time3 = get_time();
 
@@ -229,15 +229,15 @@ int work_2(	int xmax,
 
 	// cudaThreadSynchronize();
 	// printf("CUDA error: %s\n", cudaGetErrorString(cudaGetLastError()));
-
+	cudaDeviceSynchronize();
 	time4 = get_time();
 
 	//================================================================================80
 	//		COPY DATA BACK TO CPU
 	//================================================================================80
 
-	cudaMemcpy(x, d_x, x_mem, cudaMemcpyDeviceToHost);
-	cudaMemcpy(y, d_y, y_mem, cudaMemcpyDeviceToHost);
+	memcpy(x, d_x, x_mem);
+	memcpy(y, d_y, y_mem);
 
 	time5 = get_time();
 

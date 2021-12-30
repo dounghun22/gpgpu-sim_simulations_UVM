@@ -652,8 +652,7 @@ transform_to_cuda(	node * root,
 	gettimeofday (&one, NULL);
 	long max_nodes = (long)(pow(order,log(size)/log(order/2.0)-1) + 1);
 	malloc_size = size*sizeof(record) + max_nodes*sizeof(knode); 
-	//mem = (char*)malloc(malloc_size);
-	cudaMallocManaged((char*)&mem, malloc_size);
+	mem = (char*)malloc(malloc_size);
 	if(mem==NULL){
 		printf("Initial malloc error\n");
 		exit(1);
@@ -662,7 +661,7 @@ transform_to_cuda(	node * root,
 
 	krecords = (record * )kmalloc(size*sizeof(record));
 	// printf("%d records\n", size);
-	knodes = (knode *)kmalloc(max_nodes*sizeof(knode))
+	knodes = (knode *)kmalloc(max_nodes*sizeof(knode));
 	// printf("%d knodes\n", max_nodes);
 
 	queue = NULL;
@@ -1025,8 +1024,7 @@ cut( int length )
 record *
 make_record(int value) 
 {
-	//record * new_record = (record *)malloc(sizeof(record));
-	cudaMallocManaged((record *)&new_record, sizeof(record));
+	record * new_record = (record *)malloc(sizeof(record));
 	if (new_record == NULL) {
 		perror("Record creation.");
 		exit(EXIT_FAILURE);
@@ -1042,22 +1040,17 @@ node *
 make_node( void ) 
 {
 	node * new_node;
-	//new_node = (node *) malloc(sizeof(node));
-	cudaMallocManaged(&new_node, sizeof(node));
+	new_node = (node *) malloc(sizeof(node));
 	if (new_node == NULL) {
 		perror("Node creation.");
 		exit(EXIT_FAILURE);
 	}
-	//new_node->keys = (int *) malloc( (order - 1) * sizeof(int) );
-	int * new_node->keys;
-	cudaMallocManaged(&(new_node->keys), (order-1)*sizeof(int));
+	new_node->keys = (int *) malloc( (order - 1) * sizeof(int) );
 	if (new_node->keys == NULL) {
 		perror("New node keys array.");
 		exit(EXIT_FAILURE);
 	}
-	//new_node->pointers = (void **) malloc( order * sizeof(void *) );
-	void** new_node-> pointers;
-	cudaMallocManaged(&(new_node->pointers), (order * sizeof(void *)));
+	new_node->pointers = (void **) malloc( order * sizeof(void *) );
 	if (new_node->pointers == NULL) {
 		perror("New node pointers array.");
 		exit(EXIT_FAILURE);
@@ -2175,22 +2168,19 @@ main(	int argc,
 
 				// INPUT: currKnode CPU allocation
 				long *currKnode;
-				//currKnode = (long *)malloc(count*sizeof(long));
-				cudaMallocManaged(&currKnode, count*sizeof(long));
+				currKnode = (long *)malloc(count*sizeof(long));
 				// INPUT: offset CPU initialization
 				memset(currKnode, 0, count*sizeof(long));
 
 				// INPUT: offset CPU allocation
 				long *offset;
-				//offset = (long *)malloc(count*sizeof(long));
-				cudaMallocManaged(&offset, count*sizeof(long));
+				offset = (long *)malloc(count*sizeof(long));
 				// INPUT: offset CPU initialization
 				memset(offset, 0, count*sizeof(long));
 
 				// INPUT: keys CPU allocation
 				int *keys;
-				//keys = (int *)malloc(count*sizeof(int));
-				cudaMallocManaged(&keys, count*sizeof(int));
+				keys = (int *)malloc(count*sizeof(int));
 				// INPUT: keys CPU initialization
 				int i;
 				for(i = 0; i < count; i++){
@@ -2198,9 +2188,7 @@ main(	int argc,
 				}
 
 				// OUTPUT: ans CPU allocation
-				record *ans;
-				//record *ans = (record *)malloc(sizeof(record)*count);
-				cudaMallocManaged(&ans, count*sizeof(record));
+				record *ans = (record *)malloc(sizeof(record)*count);
 				// OUTPUT: ans CPU initialization
 				for(i = 0; i < count; i++){
 					ans[i].value = -1;
@@ -2244,10 +2232,10 @@ main(	int argc,
                                 fclose(pFile);
 				
 				// free memory
-				cudaFree(currKnode);
-				cudaFree(offset);
-				cudaFree(keys);
-				cudaFree(ans);
+				free(currKnode);
+				free(offset);
+				free(keys);
+				free(ans);
 
 				// break out of case
 				break;
@@ -2309,40 +2297,33 @@ main(	int argc,
 
 				// INPUT: currKnode CPU allocation
 				long *currKnode;
-				//currKnode = (long *)malloc(count*sizeof(long));
-				cudaMallocManaged(&currKnode, count*sizeof(long));
+				currKnode = (long *)malloc(count*sizeof(long));
 				// INPUT: offset CPU initialization
 				memset (currKnode, 0, count*sizeof(long));
 
 				// INPUT: offset CPU allocation
 				long *offset;
-				//offset = (long *)malloc(count*sizeof(long));
-				cudaMallocManaged(&offset, count*sizeof(long));
+				offset = (long *)malloc(count*sizeof(long));
 				// INPUT: offset CPU initialization
 				memset (offset, 0, count*sizeof(long));
 
 				// INPUT: lastKnode CPU allocation
 				long *lastKnode;
-				//lastKnode = (long *)malloc(count*sizeof(long));
-				cudaMallocManaged(&lastKnode, count*sizeof(long));
-
+				lastKnode = (long *)malloc(count*sizeof(long));
 				// INPUT: offset CPU initialization
 				memset (lastKnode, 0, count*sizeof(long));
 
 				// INPUT: offset_2 CPU allocation
 				long *offset_2;
-				//offset_2 = (long *)malloc(count*sizeof(long));
-				cudaMallocManaged(&offset_2, count*sizeof(long));
+				offset_2 = (long *)malloc(count*sizeof(long));
 				// INPUT: offset CPU initialization
 				memset (offset_2, 0, count*sizeof(long));
 
 				// INPUT: start, end CPU allocation
 				int *start;
-				//start = (int *)malloc(count*sizeof(int));
-				cudaMallocManaged(&start, count*sizeof(int));
+				start = (int *)malloc(count*sizeof(int));
 				int *end;
-				//end = (int *)malloc(count*sizeof(int));
-				cudaMallocManaged(&end, count*sizeof(int));
+				end = (int *)malloc(count*sizeof(int));
 				// INPUT: start, end CPU initialization
 				int i;
 				for(i = 0; i < count; i++){
@@ -2356,12 +2337,9 @@ main(	int argc,
 
 				// INPUT: recstart, reclenght CPU allocation
 				int *recstart;
-				//recstart = (int *)malloc(count*sizeof(int));
-				cudaMallocManaged(&recstart, count*sizeof(int));
-
+				recstart = (int *)malloc(count*sizeof(int));
 				int *reclength;
-				//reclength = (int *)malloc(count*sizeof(int));
-				cudaMallocManaged(&reclength, count*sizeof(int));
+				reclength = (int *)malloc(count*sizeof(int));
 				// OUTPUT: ans CPU initialization
 				for(i = 0; i < count; i++){
 					recstart[i] = 0;
@@ -2402,14 +2380,14 @@ main(	int argc,
 
 
 				// free memory
-				cudaFree(currKnode);
-				cudaFree(offset);
-				cudaFree(lastKnode);
-				cudaFree(offset_2);
-				cudaFree(start);
-				cudaFree(end);
-				cudaFree(recstart);
-				cudaFree(reclength);
+				free(currKnode);
+				free(offset);
+				free(lastKnode);
+				free(offset_2);
+				free(start);
+				free(end);
+				free(recstart);
+				free(reclength);
 
 				// break out of case
 				break;

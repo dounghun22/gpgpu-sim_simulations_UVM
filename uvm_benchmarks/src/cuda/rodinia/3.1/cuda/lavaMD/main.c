@@ -162,8 +162,7 @@ main(	int argc,
 	//====================================================================================================100
 
 	// allocate boxes
-	//box_cpu = (box_str*)malloc(dim_cpu.box_mem);
-	cudaMallocManaged(&box_cpu, dim_cpu.box_mem);
+	box_cpu = (box_str*)malloc(dim_cpu.box_mem);
 
 	// initialize number of home boxes
 	nh = 0;
@@ -229,9 +228,7 @@ main(	int argc,
 	srand(time(NULL));
 
 	// input (distances)
-	//rv_cpu = (FOUR_VECTOR*)malloc(dim_cpu.space_mem);
-	cudaMallocManaged(&rv_cpu, dim_cpu.space_mem);
-
+	rv_cpu = (FOUR_VECTOR*)malloc(dim_cpu.space_mem);
 	for(i=0; i<dim_cpu.space_elem; i=i+1){
 		rv_cpu[i].v = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
 		rv_cpu[i].x = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
@@ -240,15 +237,13 @@ main(	int argc,
 	}
 
 	// input (charge)
-	//qv_cpu = (fp*)malloc(dim_cpu.space_mem2);
-	cudaMallocManaged(&qv_cpu, dim_cpu.space_mem2);
+	qv_cpu = (fp*)malloc(dim_cpu.space_mem2);
 	for(i=0; i<dim_cpu.space_elem; i=i+1){
 		qv_cpu[i] = (rand()%10 + 1) / 10.0;			// get a number in the range 0.1 - 1.0
 	}
 
 	// output (forces)
-	//fv_cpu = (FOUR_VECTOR*)malloc(dim_cpu.space_mem);
-	cudaMallocManaged(&fv_cpu, dim_cpu.space_mem);
+	fv_cpu = (FOUR_VECTOR*)malloc(dim_cpu.space_mem);
 	for(i=0; i<dim_cpu.space_elem; i=i+1){
 		fv_cpu[i].v = 0;								// set to 0, because kernels keeps adding to initial value
 		fv_cpu[i].x = 0;								// set to 0, because kernels keeps adding to initial value
@@ -291,10 +286,10 @@ main(	int argc,
 
 
 
-	cudaFree(rv_cpu);
-	cudaFree(qv_cpu);
-	cudaFree(fv_cpu);
-	cudaFree(box_cpu);
+	free(rv_cpu);
+	free(qv_cpu);
+	free(fv_cpu);
+	free(box_cpu);
 
 	time7 = get_time();
 

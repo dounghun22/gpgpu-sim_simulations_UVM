@@ -126,18 +126,17 @@ main ( int argc, char *argv[] )
     matrix_duplicate(m, &mm, matrix_dim);
   }
 
-  cudaMalloc((void**)&d_m, 
+  cudaMallocManaged((void**)&d_m, 
              matrix_dim*matrix_dim*sizeof(float));
 
   /* beginning of timing point */
   stopwatch_start(&sw);
-  cudaMemcpy(d_m, m, matrix_dim*matrix_dim*sizeof(float), 
-	     cudaMemcpyHostToDevice);
+  memcpy(d_m, m, matrix_dim*matrix_dim*sizeof(float));
 
   lud_cuda(d_m, matrix_dim);
+  cudaDeviceSynchronize();
 
-  cudaMemcpy(m, d_m, matrix_dim*matrix_dim*sizeof(float), 
-	     cudaMemcpyDeviceToHost);
+  memcpy(m, d_m, matrix_dim*matrix_dim*sizeof(float));
 
   /* end of timing point */
   stopwatch_stop(&sw);

@@ -43,8 +43,8 @@ void master(fp timeinst,
 	int d_com_mem;
 	d_com_mem = 3 * sizeof(fp);
 
-	cudaMemcpy(d_initvalu, initvalu, d_initvalu_mem, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_params, parameter, d_params_mem, cudaMemcpyHostToDevice);
+	memcpy(d_initvalu, initvalu, d_initvalu_mem);
+	memcpy(d_params, parameter, d_params_mem);
 
 	threads.x = NUMBER_THREADS;
 	threads.y = 1;
@@ -56,8 +56,9 @@ void master(fp timeinst,
 															d_params,
 															d_com);
 
-	cudaMemcpy(finavalu, d_finavalu, d_finavalu_mem, cudaMemcpyDeviceToHost);
-	cudaMemcpy(com, d_com, d_com_mem, cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+	memcpy(finavalu, d_finavalu, d_finavalu_mem);
+	memcpy(com, d_com, d_com_mem);
 
 	//=====================================================================
 	//	FINAL KERNEL

@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
         freeDeviceMemory =  512*1024*1024;
         totalDeviceMemory = 768*1024*1024;
 #else
-   cudaMemGetInfo(  &freeDeviceMemory, &totalDeviceMemory );
+    cudaMemGetInfo(  &freeDeviceMemory, &totalDeviceMemory );
 #endif
 
 	cudaThreadSynchronize();
@@ -140,27 +140,28 @@ int main(int argc, char* argv[])
 	/**
 	* Allocate memory on host and device
 	*/
-	cudaMallocManaged(&d_locations,sizeof(LatLong) * numRecords);
-	cudaMallocManaged(&d_distances,sizeof(float) * numRecords);
+	distances = (float *)malloc(sizeof(float) * numRecords);
+	cudaMallocManaged((void **) &d_locations,sizeof(LatLong) * numRecords);
+	cudaMallocManaged((void **) &d_distances,sizeof(float) * numRecords);
 
    /**
     * Transfer data from host to device
     */
-   // cudaMemcpy( d_locations, &locations[0], sizeof(LatLong) * numRecords, cudaMemcpyHostToDevice);
+    memcpy( d_locations, &locations[0], sizeof(LatLong) * numRecords);
 
     /**
     * Execute kernel
     */
     euclid<<< gridDim, threadsPerBlock >>>(d_locations,d_distances,numRecords,lat,lng);
     cudaThreadSynchronize();
-
+	cudaDeviceSynchronize();
     //Copy data from device memory to host memory
-   // cudaMemcpy( distances, d_distances, sizeof(float)*numRecords, cudaMemcpyDeviceToHost );
+    memcpy( distances, d_distances, sizeof(float)*numRecords);
 
 	// find the resultsCount least distances
-    findLowest(records,d_distances,numRecords,resultsCount);
+    findLowest(records,distances,numRecords,resultsCount);
 
-    // print out results`
+    // print out results
     if (!quiet)
     for(i=0;i<resultsCount;i++) {
       printf("%s --> Distance=%f\n",records[i].recString,records[i].distance);

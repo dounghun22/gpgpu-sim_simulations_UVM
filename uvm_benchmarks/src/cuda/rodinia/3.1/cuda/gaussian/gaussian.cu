@@ -134,17 +134,14 @@ int main(int argc, char *argv[])
               Size = atoi(argv[i]);
 	      printf("Create matrix internally in parse, size = %d \n", Size);
 
-	      //a = (float *) malloc(Size * Size * sizeof(float));
-	      cudaMallocManaged(&a, Size * Size * sizeof(float));
+	      a = (float *) malloc(Size * Size * sizeof(float));
 	      create_matrix(a, Size);
 
-	      //b = (float *) malloc(Size * sizeof(float));
-	      cudaMallocManaged(&b, Size * sizeof(float));
+	      b = (float *) malloc(Size * sizeof(float));
 	      for (j =0; j< Size; j++)
 	    	b[j]=1.0;
 
-	      //m = (float *) malloc(Size * Size * sizeof(float));
-	      cudaMallocManaged(&m, Size * Size * sizeof(float));
+	      m = (float *) malloc(Size * Size * sizeof(float));
               break;
             case 'f': // platform
               i++;
@@ -193,9 +190,9 @@ int main(int argc, char *argv[])
     /*printf("%d,%d\n",size,time_total);
     fprintf(stderr,"%d,%d\n",size,time_total);*/
     
-    cudaFree(m);
-    cudaFree(a);
-    cudaFree(b);
+    free(m);
+    free(a);
+    free(b);
 }
 /*------------------------------------------------------
  ** PrintDeviceProperties
@@ -255,20 +252,18 @@ void InitProblemOnce(char *filename)
 	
 	fscanf(fp, "%d", &Size);	
 	 
-	//a = (float *) malloc(Size * Size * sizeof(float));
-	cudaMallocManaged(&a, Size * Size * sizeof(float));
+	a = (float *) malloc(Size * Size * sizeof(float));
 	 
 	InitMat(a, Size, Size);
 	//printf("The input matrix a is:\n");
 	//PrintMat(a, Size, Size);
-	//b = (float *) malloc(Size * sizeof(float));
-	cudaMallocManaged(&b, Size * sizeof(float));
+	b = (float *) malloc(Size * sizeof(float));
+	
 	InitAry(b, Size);
 	//printf("The input array b is:\n");
 	//PrintAry(b, Size);
 		
-	 //m = (float *) malloc(Size * Size * sizeof(float));
-	cudaMallocManaged(&m, Size * Size * sizeof(float));
+	 m = (float *) malloc(Size * Size * sizeof(float));
 }
 
 /*------------------------------------------------------
@@ -331,19 +326,19 @@ __global__ void Fan2(float *m_cuda, float *a_cuda, float *b_cuda,int Size, int j
 void ForwardSub()
 {
 	int t;
-    //float *m_cuda,*a_cuda,*b_cuda;
+    float *m_cuda,*a_cuda,*b_cuda;
 	
 	// allocate memory on GPU
-	//cudaMalloc((void **) &m_cuda, Size * Size * sizeof(float));
+	cudaMallocManaged((void **) &m_cuda, Size * Size * sizeof(float));
 	 
-	//cudaMalloc((void **) &a_cuda, Size * Size * sizeof(float));
+	cudaMallocManaged((void **) &a_cuda, Size * Size * sizeof(float));
 	
-	//cudaMalloc((void **) &b_cuda, Size * sizeof(float));	
+	cudaMallocManaged((void **) &b_cuda, Size * sizeof(float));	
 
 	// copy memory to GPU
-	//cudaMemcpy(m_cuda, m, Size * Size * sizeof(float),cudaMemcpyHostToDevice );
-	//cudaMemcpy(a_cuda, a, Size * Size * sizeof(float),cudaMemcpyHostToDevice );
-	//cudaMemcpy(b_cuda, b, Size * sizeof(float),cudaMemcpyHostToDevice );
+	memcpy(m_cuda, m, Size * Size * sizeof(float));
+	memcpy(a_cuda, a, Size * Size * sizeof(float));
+	memcpy(b_cuda, b, Size * sizeof(float));
 	
 	int block_size,grid_size;
 	
@@ -367,26 +362,26 @@ void ForwardSub()
     struct timeval time_start;
     gettimeofday(&time_start, NULL);
 	for (t=0; t<(Size-1); t++) {
-		Fan1<<<dimGrid,dimBlock>>>(m,a,Size,t);
-		//cudaThreadSynchronize();
-		//cudaDeviceSynchronize();
-		Fan2<<<dimGridXY,dimBlockXY>>>(m,a,b,Size,Size-t,t);
-		//cudaThreadSynchronize();
+		Fan1<<<dimGrid,dimBlock>>>(m_cuda,a_cuda,Size,t);
+		cudaThreadSynchronize();
+		Fan2<<<dimGridXY,dimBlockXY>>>(m_cuda,a_cuda,b_cuda,Size,Size-t,t);
+		cudaThreadSynchronize();
 		cudaDeviceSynchronize();
 		checkCUDAError("Fan2");
 	}
+	//cudaDeviceSynchronize();
 	// end timing kernels
 	struct timeval time_end;
     gettimeofday(&time_end, NULL);
     totalKernelTime = (time_end.tv_sec * 1000000 + time_end.tv_usec) - (time_start.tv_sec * 1000000 + time_start.tv_usec);
 	
 	// copy memory back to CPU
-	//cudaMemcpy(m, m_cuda, Size * Size * sizeof(float),cudaMemcpyDeviceToHost );
-	//cudaMemcpy(a, a_cuda, Size * Size * sizeof(float),cudaMemcpyDeviceToHost );
-	//cudaMemcpy(b, b_cuda, Size * sizeof(float),cudaMemcpyDeviceToHost );
-	//cudaFree(m_cuda);
-	//cudaFree(a_cuda);
-	//cudaFree(b_cuda);
+	memcpy(m, m_cuda, Size * Size * sizeof(float));
+	memcpy(a, a_cuda, Size * Size * sizeof(float));
+	memcpy(b, b_cuda, Size * sizeof(float));
+	cudaFree(m_cuda);
+	cudaFree(a_cuda);
+	cudaFree(b_cuda);
 }
 
 /*------------------------------------------------------

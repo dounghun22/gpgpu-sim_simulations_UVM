@@ -63,7 +63,7 @@ kernel_gpu_cuda_wrapper(par_str par_cpu,
 	//	INITIAL DRIVER OVERHEAD
 	//====================================================================================================100
 
-	cudaDeviceSynchronize();
+	cudaThreadSynchronize();
 
 	//====================================================================================================100
 	//	VARIABLES
@@ -100,23 +100,23 @@ kernel_gpu_cuda_wrapper(par_str par_cpu,
 	//	boxes
 	//==================================================50
 
-	//cudaMalloc(	(void **)&d_box_gpu, 
-	//			dim_cpu.box_mem);
-	d_box_gpu = box_cpu;
+	cudaMallocManaged(	(void **)&d_box_gpu, 
+				dim_cpu.box_mem);
+
 	//==================================================50
 	//	rv
 	//==================================================50
 
-	//cudaMalloc(	(void **)&d_rv_gpu, 
-	//			dim_cpu.space_mem);
-	d_rv_gpu = rv_cpu;
+	cudaMallocManaged(	(void **)&d_rv_gpu, 
+				dim_cpu.space_mem);
+
 	//==================================================50
 	//	qv
 	//==================================================50
 
-	//cudaMalloc(	(void **)&d_qv_gpu, 
-	//			dim_cpu.space_mem2);
-	d_qv_gpu = qv_cpu;
+	cudaMallocManaged(	(void **)&d_qv_gpu, 
+				dim_cpu.space_mem2);
+
 	//====================================================================================================100
 	//	GPU MEMORY				(MALLOC) COPY
 	//====================================================================================================100
@@ -125,9 +125,9 @@ kernel_gpu_cuda_wrapper(par_str par_cpu,
 	//	fv
 	//==================================================50
 
-	//cudaMalloc(	(void **)&d_fv_gpu, 
-	//			dim_cpu.space_mem);
-	d_fv_gpu = fv_cpu;
+	cudaMallocManaged(	(void **)&d_fv_gpu, 
+				dim_cpu.space_mem);
+
 	time2 = get_time();
 
 	//======================================================================================================================================================150
@@ -142,28 +142,25 @@ kernel_gpu_cuda_wrapper(par_str par_cpu,
 	//	boxes
 	//==================================================50
 
-	//cudaMemcpy(	d_box_gpu, 
-	//			box_cpu,
-	//			dim_cpu.box_mem, 
-	//			cudaMemcpyHostToDevice);
+	memcpy(	d_box_gpu, 
+				box_cpu,
+				dim_cpu.box_mem);
 
 	//==================================================50
 	//	rv
 	//==================================================50
 
-	//cudaMemcpy(	d_rv_gpu,
-	//			rv_cpu,
-	//			dim_cpu.space_mem,
-	//			cudaMemcpyHostToDevice);
+	memcpy(	d_rv_gpu,
+				rv_cpu,
+				dim_cpu.space_mem);
 
 	//==================================================50
 	//	qv
 	//==================================================50
 
-	//cudaMemcpy(	d_qv_gpu,
-	//			qv_cpu,
-	//			dim_cpu.space_mem2,
-	//			cudaMemcpyHostToDevice);
+	memcpy(	d_qv_gpu,
+				qv_cpu,
+				dim_cpu.space_mem2);
 
 	//====================================================================================================100
 	//	GPU MEMORY				(MALLOC) COPY
@@ -173,10 +170,9 @@ kernel_gpu_cuda_wrapper(par_str par_cpu,
 	//	fv
 	//==================================================50
 
-	//cudaMemcpy(	d_fv_gpu, 
-	//			fv_cpu, 
-	//			dim_cpu.space_mem, 
-	//			cudaMemcpyHostToDevice);
+	memcpy(	d_fv_gpu, 
+				fv_cpu, 
+				dim_cpu.space_mem);
 
 	time3 = get_time();
 
@@ -193,29 +189,29 @@ kernel_gpu_cuda_wrapper(par_str par_cpu,
 											d_fv_gpu);
 
 	checkCUDAError("Start");
-	//cudaThreadSynchronize();
+	cudaThreadSynchronize();
 	cudaDeviceSynchronize();
+
 	time4 = get_time();
 
 	//======================================================================================================================================================150
 	//	GPU MEMORY			COPY (CONTD.)
 	//======================================================================================================================================================150
 
-	/*cudaMemcpy(	fv_cpu, 
+	memcpy(	fv_cpu, 
 				d_fv_gpu, 
-				dim_cpu.space_mem, 
-				cudaMemcpyDeviceToHost);
-	*/
+				dim_cpu.space_mem);
+
 	time5 = get_time();
 
 	//======================================================================================================================================================150
 	//	GPU MEMORY DEALLOCATION
 	//======================================================================================================================================================150
 
-	//cudaFree(d_rv_gpu);
-	//cudaFree(d_qv_gpu);
-	//cudaFree(d_fv_gpu);
-	//cudaFree(d_box_gpu);
+	cudaFree(d_rv_gpu);
+	cudaFree(d_qv_gpu);
+	cudaFree(d_fv_gpu);
+	cudaFree(d_box_gpu);
 
 	time6 = get_time();
 

@@ -52,7 +52,7 @@ float4* runMergeSort(int listsize, int divisions,
 	dim3 grid(blocks, 1);
 	cudaBindTexture(0,tex, d_origList, channelDesc, listsize*sizeof(float)); 
 	mergeSortFirst<<< grid, threads >>>(d_resultList, listsize);
-
+	cudaDeviceSynchronize();
 	////////////////////////////////////////////////////////////////////////////
 	// Then, go level by level
 	////////////////////////////////////////////////////////////////////////////
@@ -84,6 +84,7 @@ float4* runMergeSort(int listsize, int divisions,
 		d_resultList = tempList; 
 		cudaBindTexture(0,tex, d_origList, channelDesc, listsize*sizeof(float)); 
 		mergeSortPass <<< grid, threads >>>(d_resultList, nrElems, threadsPerDiv); 
+		cudaDeviceSynchronize();
 		nrElems *= 2; 
 		floatsperthread = (nrElems*4); 
 		if(threadsPerDiv == 1) break; 
@@ -101,6 +102,7 @@ float4* runMergeSort(int listsize, int divisions,
 			(largestSize/threads.x) + 1; 
 	grid.y = divisions; 
 	mergepack <<< grid, threads >>> ((float *)d_resultList, (float *)d_origList);
+	cudaDeviceSynchronize();	
 
 	free(startaddr);
 	return d_origList; 

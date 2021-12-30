@@ -91,26 +91,22 @@ void BFSGraph( int argc, char** argv)
 		num_of_threads_per_block = MAX_THREADS_PER_BLOCK; 
 	}
 
-	// allocate uvm memory
-	Node* graph_nodes;
-	bool* graph_mask;
-	bool* updating_graph_mask;
-	bool* graph_visited;
-	cudaMallocManaged(&graph_nodes,sizeof(Node)*no_of_nodes);
-	cudaMallocManaged(&graph_mask, sizeof(bool)*no_of_nodes);
-	cudaMallocManaged(&updating_graph_mask, sizeof(bool)*no_of_nodes);
-	cudaMallocManaged(&graph_visited, sizeof(bool)*no_of_nodes);
+	// allocate host memory
+	Node* h_graph_nodes = (Node*) malloc(sizeof(Node)*no_of_nodes);
+	bool *h_graph_mask = (bool*) malloc(sizeof(bool)*no_of_nodes);
+	bool *h_updating_graph_mask = (bool*) malloc(sizeof(bool)*no_of_nodes);
+	bool *h_graph_visited = (bool*) malloc(sizeof(bool)*no_of_nodes);
 
 	int start, edgeno;   
 	// initalize the memory
 	for( unsigned int i = 0; i < no_of_nodes; i++) 
 	{
 		fscanf(fp,"%d %d",&start,&edgeno);
-		graph_nodes[i].starting = start;
-		graph_nodes[i].no_of_edges = edgeno;
-		graph_mask[i]=false;
-		updating_graph_mask[i]=false;
-		graph_visited[i]=false;
+		h_graph_nodes[i].starting = start;
+		h_graph_nodes[i].no_of_edges = edgeno;
+		h_graph_mask[i]=false;
+		h_updating_graph_mask[i]=false;
+		h_graph_visited[i]=false;
 	}
 
 	//read the source node from the file
@@ -118,19 +114,18 @@ void BFSGraph( int argc, char** argv)
 	source=0;
 
 	//set the source node as true in the mask
-	graph_mask[source]=true;
-	graph_visited[source]=true;
+	h_graph_mask[source]=true;
+	h_graph_visited[source]=true;
 
 	fscanf(fp,"%d",&edge_list_size);
-	
-	int* graph_edges;
-	cudaMallocManaged(&graph_edges, sizeof(int)*edge_list_size);
-	int id,edgeCost;
+
+	int id,cost;
+	int* h_graph_edges = (int*) malloc(sizeof(int)*edge_list_size);
 	for(int i=0; i < edge_list_size ; i++)
 	{
 		fscanf(fp,"%d",&id);
-		fscanf(fp,"%d",&edgeCost);
-		graph_edges[i] = id;
+		fscanf(fp,"%d",&cost);
+		h_graph_edges[i] = id;
 	}
 
 	if(fp)
@@ -138,51 +133,46 @@ void BFSGraph( int argc, char** argv)
 
 	printf("Read File\n");
 
-	// allocate mem for the result
-	int* cost;
-	cudaMallocManaged((void**)&cost,sizeof(int)*no_of_nodes);
+	//Copy the Node list to device memory
+	Node* d_graph_nodes;
+	cudaMallocManaged((void**) &d_graph_nodes, sizeof(Node)*no_of_nodes) ;
+	memcpy( d_graph_nodes, h_graph_nodes, sizeof(Node)*no_of_nodes) ;
+
+	//Copy the Edge List to device Memory
+	int* d_graph_edges;
+	cudaMallocManaged( (void**) &d_graph_edges, sizeof(int)*edge_list_size) ;
+	memcpy( d_graph_edges, h_graph_edges, sizeof(int)*edge_list_size) ;
+
+	//Copy the Mask to device memory
+	bool* d_graph_mask;
+	cudaMallocManaged( (void**) &d_graph_mask, sizeof(bool)*no_of_nodes) ;
+	memcpy( d_graph_mask, h_graph_mask, sizeof(bool)*no_of_nodes) ;
+
+	bool* d_updating_graph_mask;
+	cudaMallocManaged( (void**) &d_updating_graph_mask, sizeof(bool)*no_of_nodes) ;
+	memcpy( d_updating_graph_mask, h_updating_graph_mask, sizeof(bool)*no_of_nodes) ;
+
+	//Copy the Visited nodes array to device memory
+	bool* d_graph_visited;
+	cudaMallocManaged( (void**) &d_graph_visited, sizeof(bool)*no_of_nodes) ;
+	memcpy( d_graph_visited, h_graph_visited, sizeof(bool)*no_of_nodes) ;
+
+	// allocate mem for the result on host side
+	int* h_cost = (int*) malloc( sizeof(int)*no_of_nodes);
 	for(int i=0;i<no_of_nodes;i++)
-		cost[i]=-1;
-	cost[source]=0;
+		h_cost[i]=-1;
+	h_cost[source]=0;
 	
+	// allocate device memory for result
+	int* d_cost;
+	cudaMallocManaged( (void**) &d_cost, sizeof(int)*no_of_nodes);
+	memcpy( d_cost, h_cost, sizeof(int)*no_of_nodes) ;
+
 	//make a bool to check if the execution is over
 	bool *d_over;
-	cudaMallocManaged( &d_over, sizeof(bool));
+	cudaMallocManaged( (void**) &d_over, sizeof(bool));
 
 	printf("Copied Everything to GPU memory\n");
-
-#ifdef PREF
-	int device = -1;
-	cudaGetDevice(&device);
-
-	cudaStream_t stream1;
-	cudaStreamCreate(&stream1);
-
-	cudaStream_t stream2;
-	cudaStreamCreate(&stream2);
-
-	cudaStream_t stream3;
-	cudaStreamCreate(&stream3);
-
-	cudaStream_t stream4;
-	cudaStreamCreate(&stream4);
-
-	cudaStream_t stream5;
-	cudaStreamCreate(&stream5);
-
-	cudaStream_t stream6;
-	cudaStreamCreate(&stream6);
-
-	cudaStream_t stream7;
-	cudaStreamCreate(&stream7);
-
-	cudaMemPrefetchAsync( graph_nodes, sizeof(Node)*no_of_nodes, device, stream1);
-	cudaMemPrefetchAsync( graph_edges, sizeof(int)*edge_list_size, device, stream2);
-	cudaMemPrefetchAsync( graph_mask, sizeof(bool)*no_of_nodes, device, stream3);
-	cudaMemPrefetchAsync( updating_graph_mask, sizeof(bool)*no_of_nodes, device, stream4);
-	cudaMemPrefetchAsync( graph_visited, sizeof(bool)*no_of_nodes, device, stream5);
-	cudaMemPrefetchAsync( cost, sizeof(int)*no_of_nodes, device, stream6);
-#endif
 
 	// setup execution parameters
 	dim3  grid( num_of_blocks, 1, 1);
@@ -196,48 +186,45 @@ void BFSGraph( int argc, char** argv)
 	{
 		//if no thread changes this value then the loop stops
 		stop=false;
-		*d_over = false;
-		//cudaMemcpy( d_over, &stop, sizeof(bool), cudaMemcpyHostToDevice);
-#ifdef PREF
-		kernel<<< grid,threads,0,stream7>>>(graph_nodes,graph_edges,graph_mask,updating_graph_mask,graph_visited,cost,no_of_nodes);
-
-		kernel2<<<grid,threads,0,stream7>>>(graph_mask,updating_graph_mask,graph_visited, d_over,no_of_nodes);
-
-#else
-		Kernel<<< grid, threads, 0 >>>( graph_nodes, graph_edges, graph_mask, updating_graph_mask, graph_visited, cost, no_of_nodes);
+		memcpy( d_over, &stop, sizeof(bool)) ;
+		Kernel<<< grid, threads, 0 >>>( d_graph_nodes, d_graph_edges, d_graph_mask, d_updating_graph_mask, d_graph_visited, d_cost, no_of_nodes);
 		// check if kernel execution generated and error
 		
 
-		Kernel2<<< grid, threads, 0 >>>( graph_mask, updating_graph_mask,graph_visited, d_over, no_of_nodes);
+		Kernel2<<< grid, threads, 0 >>>( d_graph_mask, d_updating_graph_mask, d_graph_visited, d_over, no_of_nodes);
 		// check if kernel execution generated and error
-		
-#endif
+		cudaDeviceSynchronize();	
 
-		//cudaMemcpy( &stop, d_over, sizeof(bool), cudaMemcpyDeviceToHost) ;
+		memcpy( &stop, d_over, sizeof(bool)) ;
 		k++;
 	}
-	while(*d_over);
-
+	while(stop);
 	cudaDeviceSynchronize();
 
 	printf("Kernel Executed %d times\n",k);
 
 	// copy result from device to host
+	memcpy( h_cost, d_cost, sizeof(int)*no_of_nodes) ;
 
 	//Store the result into a file
 	FILE *fpo = fopen("result.txt","w");
 	for(int i=0;i<no_of_nodes;i++)
-		fprintf(fpo,"%d) cost:%d\n",i,cost[i]);
+		fprintf(fpo,"%d) cost:%d\n",i,h_cost[i]);
 	fclose(fpo);
 	printf("Result stored in result.txt\n");
 
 
 	// cleanup memory
-	cudaFree(graph_nodes);
-	cudaFree(graph_edges);
-	cudaFree(graph_mask);
-	cudaFree(updating_graph_mask);
-	cudaFree(graph_visited);
-	cudaFree(cost);
-	cudaFree(d_over);
+	free( h_graph_nodes);
+	free( h_graph_edges);
+	free( h_graph_mask);
+	free( h_updating_graph_mask);
+	free( h_graph_visited);
+	free( h_cost);
+	cudaFree(d_graph_nodes);
+	cudaFree(d_graph_edges);
+	cudaFree(d_graph_mask);
+	cudaFree(d_updating_graph_mask);
+	cudaFree(d_graph_visited);
+	cudaFree(d_cost);
 }

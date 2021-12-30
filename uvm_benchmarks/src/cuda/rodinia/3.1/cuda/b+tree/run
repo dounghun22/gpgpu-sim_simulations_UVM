@@ -1,1 +1,1 @@
-./b+tree.out file ../DATA/b+tree-rodinia-3.1/data/mil.txt command ../DATA/b+tree-rodinia-3.1/data/command.txt
+./b+tree file ../DATA/b+tree-rodinia-3.1/data/mil.txt command ../DATA/b+tree-rodinia-3.1/data/command.txt
